@@ -11,6 +11,8 @@ import javax.swing.JOptionPane;
 
 import javax.swing.*;
 import java.sql.*;
+import static java.util.Objects.hash;
+import org.mindrot.jbcrypt.BCrypt;
 
 /**
  *
@@ -92,6 +94,8 @@ public class JF_Login extends javax.swing.JFrame {
                 .addGap(15, 15, 15))
         );
 
+        txtUsername.getAccessibleContext().setAccessibleName("");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -108,84 +112,89 @@ public class JF_Login extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnIngresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIngresarActionPerformed
-           String usuario = txtUsername.getText();
-             String contraseña = new String(txtPasword.getPassword());
-        
-           if (usuario.isEmpty()) 
-           {
+        String usuario = txtUsername.getText();
+        String contraseña = new String(txtPasword.getPassword());
+
+        if (usuario.isEmpty()) 
+        {
             JOptionPane.showMessageDialog(null, "El campo usuario no puede estar vacío.");
             return;
         }
 
-        if (contraseña.isEmpty())
+        if (contraseña.isEmpty()) 
         {
             JOptionPane.showMessageDialog(null, "El campo contraseña no puede estar vacío.");
             return;
         }
-        
-       
-        
+
         // Consulta a la base de datos para verificar las credenciales   
-        
-          
-           try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "1");
-        PreparedStatement consulta = connection.prepareStatement("SELECT * FROM login WHERE username = ? AND pasword = ?");)
-                {                  
-                                        
-                    consulta.setString(1, usuario);
-                    consulta.setString(2, contraseña);
-                    ResultSet resultado = consulta.executeQuery();                
-                    
-               
-      
-                    
-                  //Si el usuario existe, abre el formulario correspondiente
-                    if (resultado.next())
-                    { 
-                            if (resultado.getString("rol").equals("admin")) 
-                               {
-                                   JF_Admin newframe = new JF_Admin(); 
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "1");)
+        {
 
-                                   newframe.setVisible(true); 
+            PreparedStatement consulta = connection.prepareStatement("SELECT * FROM login WHERE username = ? AND password = ?");
+            consulta.setString(1, usuario);
+            consulta.setString(2, contraseña);
+            ResultSet resultado = consulta.executeQuery();
 
-                                   this.dispose();
+            if (resultado.next()) 
+            {
+                String hash = resultado.getString("hash");
 
-                                    connection.close();
+                boolean passwordMatches = BCrypt.checkpw(contraseña, hash);
 
-                                    //break;                         
+//                System.out.println(passwordMatches);
 
-                               } 
-
-                               else if (resultado.getString("rol").equals("user"))
-                               {
-                                   JF_Usuario newframe = new JF_Usuario();
-
-                                   newframe.setVisible(true);
-
-                                   this.dispose();
-
-                                    connection.close();
-
-                                    //break
-                               }
-                               else
-                               {
-                                   JOptionPane.showMessageDialog(null, "No tienes ningún rol", "Alerta", JOptionPane.WARNING_MESSAGE);
-                               }
-                           
-                    } else  {
-                                // La contraseña es incorrecta
-                                JOptionPane.showMessageDialog(null, "El usaurio o la contraseña es incorrecta.", "Alerta", JOptionPane.WARNING_MESSAGE);
-                                return;
-                            }                          
-                   
-                } 
-                    
-                catch (SQLException e) 
+                if (passwordMatches) 
                 {
-                     System.out.println("Error al iniciar sesión: " + e.getMessage());
+                    
+                     JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso para el usuario: " + usuario);
+                    // Aquí puedes redirigir a otra ventana o realizar acciones posteriores al inicio de sesión
+
+                    if (resultado.getString("rol").equals("admin")) 
+                    {
+                        JF_Admin newframe = new JF_Admin();
+
+                        newframe.setVisible(true);
+
+                        this.dispose();
+
+                        connection.close();
+
+                        //break;
+                    }
+                    else if (resultado.getString("rol").equals("user")) 
+                    {
+                        JF_Usuario newframe = new JF_Usuario();
+
+                        newframe.setVisible(true);
+
+                        this.dispose();
+
+                        connection.close();
+
+                        //break
+                    } 
+                    else 
+                    {
+                        JOptionPane.showMessageDialog(null, "No tienes ningún rol", "Alerta", JOptionPane.WARNING_MESSAGE);
+                    }
+                    
+                   
                 }
-        
+                else 
+                {
+                    JOptionPane.showMessageDialog(null, "La contraseña no coincide con el hash.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+            else 
+            {
+                JOptionPane.showMessageDialog(null, "Inicio de sesión fallido. Verifica tus credenciales.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al iniciar sesión: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al iniciar sesión:", "ERROR", JOptionPane.ERROR_MESSAGE);
+        }
+
    
     }//GEN-LAST:event_btnIngresarActionPerformed
 

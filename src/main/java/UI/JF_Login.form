@@ -95,6 +95,9 @@
         <Component class="javax.swing.JPasswordField" name="txtPasword">
         </Component>
         <Component class="javax.swing.JTextField" name="txtUsername">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+          </AccessibilityProperties>
         </Component>
         <Component class="javax.swing.JButton" name="btnIngresar">
           <Properties>
