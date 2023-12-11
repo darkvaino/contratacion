@@ -128,7 +128,7 @@ public class JF_Login extends javax.swing.JFrame {
         }
 
         // Consulta a la base de datos para verificar las credenciales   
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "1");)
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "admin");)
         {
 
             PreparedStatement consulta = connection.prepareStatement("SELECT * FROM login WHERE username = ? AND password = ?");

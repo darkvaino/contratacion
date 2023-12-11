@@ -89,7 +89,7 @@ public class Login
     
 private boolean Login(String usuario, String contraseña) 
 {
-    try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "1")) 
+    try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "admin")) 
     {
         PreparedStatement consulta = connection.prepareStatement("SELECT * FROM login WHERE username = ? AND password = ?");
         consulta.setString(1, usuario);

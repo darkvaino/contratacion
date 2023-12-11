@@ -224,7 +224,7 @@ public class JF_Editar_Usuario extends javax.swing.JFrame {
         }
 
         // Actualizamos los datos del usuario en la base de datos
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "1"); 
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "admin"); 
             PreparedStatement consulta = connection.prepareStatement("UPDATE login SET username = ?, password = ?, rol = ? hash = ? WHERE id_login = ?")) {
           
             // Si la contraseña es diferente a la anterior, la encriptamos

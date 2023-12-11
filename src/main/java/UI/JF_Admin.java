@@ -284,7 +284,7 @@ public class JF_Admin extends javax.swing.JFrame {
         // agregar los datos a la base de datos   
         
           
-           try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "1");)
+           try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "admin");)
                 {    
                     PreparedStatement consulta = connection.prepareStatement("INSERT INTO login (username, password, rol,hash) VALUES (?, ?, ?, ?)");
                     
@@ -364,7 +364,7 @@ public class JF_Admin extends javax.swing.JFrame {
                  //obtenner la id del elemento eliminar
                  int id_usuario = Integer.parseInt((String.valueOf(TB_tablaUsuarios.getValueAt(TB_tablaUsuarios.getSelectedRow(),0))));
                  
-                 try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "1");) 
+                 try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "admin");) 
                  {
                      PreparedStatement consulta = connection.prepareStatement("DELETE FROM login WHERE id_login = ?");
                      
@@ -398,7 +398,7 @@ public class JF_Admin extends javax.swing.JFrame {
     private void cargarTabla() throws SQLException
     {
         // Obtener la conexión a la base de datos
-        Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "1");
+        Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "admin");
 
         // Crear una consulta SQL
         String sql = "SELECT id_login, username, password, rol FROM login";
