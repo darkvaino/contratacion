@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
  */
 
-import UI.JF_Login;
+import interfaz.grafica.JF_Login;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -86,7 +86,7 @@ public class Login
     }    
     
 
-    
+     @Test 
 private boolean Login(String usuario, String contraseña) 
 {
     try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "1")) 

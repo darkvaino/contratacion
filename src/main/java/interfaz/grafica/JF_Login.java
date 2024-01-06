@@ -2,24 +2,55 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package UI;
+package interfaz.grafica;
 
 
 import Conexion.Conexion;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import javax.swing.JOptionPane;
 
 
 import javax.swing.*;
 import java.sql.*;
 import static java.util.Objects.hash;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.mindrot.jbcrypt.BCrypt;
 
+
+import java.util.ResourceBundle;
+import javax.swing.JOptionPane;
 /**
  *
  * @author Jhoan
  */
 public class JF_Login extends javax.swing.JFrame {
+    
+    Properties datosProps = new Properties();
+       Properties jfLoginProps = new Properties();
+     
+       public void cargarproperties() 
+     {   
+         
+        try {
+            datosProps.load(new FileInputStream("D:\\Documentos\\NetBeansProjects\\contratacion\\src\\main\\java\\packagesproperties\\datos.properties"));
+        } catch (IOException e) {
+            System.out.println("error de cargar las properties datos" + e.getMessage());
+        }
+        
+        try {
+            jfLoginProps.load(new FileInputStream("D:\\Documentos\\NetBeansProjects\\contratacion\\src\\main\\java\\packagesproperties\\jf_login.properties"));
+        } catch (IOException e) {
+            System.out.println("error de cargar las properties jf_admin" + e.getMessage());
+        }
+   
 
+     }
+    
     /**
      * Creates new form Login
      */
@@ -45,12 +76,13 @@ public class JF_Login extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("LOGIN");
+        setResizable(false);
 
         lblUsuario.setText("Usuario");
 
         lblContraseña.setText("Contraseña");
 
-        btnIngresar.setText("ingresar");
+        btnIngresar.setText("Ingresar");
         btnIngresar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnIngresarActionPerformed(evt);
@@ -111,88 +143,101 @@ public class JF_Login extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    
+   
+    
     private void btnIngresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIngresarActionPerformed
+        // Leer el fichero de propiedades
+
+        cargarproperties();
+
+        // captura de datos del formulario login
         String usuario = txtUsername.getText();
         String contraseña = new String(txtPasword.getPassword());
 
-        if (usuario.isEmpty()) 
-        {
-            JOptionPane.showMessageDialog(null, "El campo usuario no puede estar vacío.");
+        if (usuario.isEmpty()) {
+            String mensajeu = jfLoginProps.getProperty("mensaje.campousuariovacio");
+
+            JOptionPane.showMessageDialog(null, mensajeu, "Alerta", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        if (contraseña.isEmpty()) 
-        {
-            JOptionPane.showMessageDialog(null, "El campo contraseña no puede estar vacío.");
+        if (contraseña.isEmpty()) {
+            String mensajec = jfLoginProps.getProperty("mensaje.campocontraseñavacio");
+
+            JOptionPane.showMessageDialog(null, mensajec, "Alerta", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         // Consulta a la base de datos para verificar las credenciales   
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/contratacion", "postgres", "1");)
-        {
+        try {
+            // Obtener la instancia de la conexión
+            Connection conexion = Conexion.getInstance(datosProps).getConnection();
 
-            PreparedStatement consulta = connection.prepareStatement("SELECT * FROM login WHERE username = ? AND password = ?");
-            consulta.setString(1, usuario);
-            consulta.setString(2, contraseña);
-            ResultSet resultado = consulta.executeQuery();
+//            System.out.println(conexion);
+//
+//            System.out.println(datosProps);
 
-            if (resultado.next()) 
-            {
+            // Obtener la consulta SQL
+            String consulta = jfLoginProps.getProperty("db.consultalogin");
+
+//            System.out.println(consulta);
+
+            // Crear la consulta preparada
+            PreparedStatement consultasql = conexion.prepareStatement(consulta);
+
+            consultasql.setString(1, usuario);
+            consultasql.setString(2, contraseña);
+
+            ResultSet resultado = consultasql.executeQuery();
+
+            if (resultado.next()) {
                 String hash = resultado.getString("hash");
 
                 boolean passwordMatches = BCrypt.checkpw(contraseña, hash);
 
 //                System.out.println(passwordMatches);
-
-                if (passwordMatches) 
-                {
-                    
-                     JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso para el usuario: " + usuario);
+                if (passwordMatches) {
+                    String mensajeiniciosesionexitoso = jfLoginProps.getProperty("mensaje.iniciodesesionexitoso");
+                    JOptionPane.showMessageDialog(null, mensajeiniciosesionexitoso + usuario);
                     // Aquí puedes redirigir a otra ventana o realizar acciones posteriores al inicio de sesión
 
-                    if (resultado.getString("rol").equals("admin")) 
-                    {
+                    if (resultado.getString("rol").equals("admin")) {
                         JF_Admin newframe = new JF_Admin();
 
                         newframe.setVisible(true);
 
                         this.dispose();
 
-                        connection.close();
-
-                        //break;
-                    }
-                    else if (resultado.getString("rol").equals("user")) 
-                    {
+//                       
+                    } else if (resultado.getString("rol").equals("user")) {
                         JF_Usuario newframe = new JF_Usuario();
 
                         newframe.setVisible(true);
 
                         this.dispose();
 
-                        connection.close();
+                    } else {
+                        String notienesrol = jfLoginProps.getProperty("mensaje.notienesrol");
 
-                        //break
-                    } 
-                    else 
-                    {
-                        JOptionPane.showMessageDialog(null, "No tienes ningún rol", "Alerta", JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.showMessageDialog(null, notienesrol, "Alerta", JOptionPane.ERROR_MESSAGE);
                     }
-                    
-                   
+
+                } else {
+
+                    String nocoicidehash = jfLoginProps.getProperty("mensaje.contraseñahashnocoincide");
+
+                    JOptionPane.showMessageDialog(null, nocoicidehash, "Error", JOptionPane.ERROR_MESSAGE);
                 }
-                else 
-                {
-                    JOptionPane.showMessageDialog(null, "La contraseña no coincide con el hash.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
+            } else {
+                String iniciosecionfallido = jfLoginProps.getProperty("mensaje.iniciosecionfallido");
+                JOptionPane.showMessageDialog(null, iniciosecionfallido, "Error", JOptionPane.ERROR_MESSAGE);
             }
-            else 
-            {
-                JOptionPane.showMessageDialog(null, "Inicio de sesión fallido. Verifica tus credenciales.");
-            }
+            conexion.close();
         } catch (SQLException e) {
-            System.out.println("Error al iniciar sesión: " + e.getMessage());
-            JOptionPane.showMessageDialog(null, "Error al iniciar sesión:", "ERROR", JOptionPane.ERROR_MESSAGE);
+            String erroriniciosesion = jfLoginProps.getProperty("mensaje.erroriniciarsesión");
+            System.out.println(erroriniciosesion + e.getMessage());
+            JOptionPane.showMessageDialog(null, erroriniciosesion, "ERROR", JOptionPane.ERROR_MESSAGE);
         }
 
    
@@ -231,5 +276,20 @@ public class JF_Login extends javax.swing.JFrame {
     private javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
